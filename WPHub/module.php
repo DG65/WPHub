@@ -31,7 +31,7 @@ class WPHub extends IPSModule
 {
     // Stand des "Neu in Version"-Panels; bei jeder Version mit Neuigkeiten
     // hochziehen, dann erscheint das Panel wieder (pro Version dismissible).
-    const NEWS_VERSION = '0.4.1';
+    const NEWS_VERSION = '0.5.0';
 
     // Comfort Cloud meldet 126 als "kein gueltiger Messwert".
     const CC_INVALID_TEMPERATURE = 126;
@@ -44,6 +44,14 @@ class WPHub extends IPSModule
     // optionale Auto-Uebernahme einer per Funktionszuordnung "Waermepumpe"
     // markierten Zaehlerzuordnung, siehe meterHubHeatpumpAssignment().
     const METERHUB_MODULE_GUID = '{BAB8E05C-9150-43B9-9F2B-E5215FA54F0A}';
+
+    // HeishaMon-Modul-GUID (DG65/NRGHeishaMon), von HeishaMon selbst mitgeteilt
+    // (13.09.2026, Verbund-Konfliktpruefung ueber ChargerHub angestossen) --
+    // fuer den rein informativen Koexistenz-Hinweis, siehe
+    // heishaMonCoexistenceWarning(). HeishaMon hat keine eigene "aktiv"-
+    // Eigenschaft; InstanceStatus 102 ("Aktiv") ist der naechstliegende
+    // verfuegbare Signal-Ersatz.
+    const HEISHAMON_MODULE_GUID = '{1919151A-3C0F-4C09-B906-291638EC1469}';
 
     public function Create()
     {
@@ -131,8 +139,7 @@ class WPHub extends IPSModule
                 'caption'  => '🆕 Neu in Version ' . self::NEWS_VERSION,
                 'expanded' => true,
                 'items'    => [
-                    ['type' => 'Label', 'caption' => '• MeterHub-Zähler mit Funktionszuordnung "Wärmepumpe" wird jetzt automatisch erkannt und lässt sich per Klick übernehmen ("🔌 Externe Sensoren & Zähler") -- kein manuelles Heraussuchen der passenden Variable mehr noetig'],
-                    ['type' => 'Label', 'caption' => '• Einheitliche Status-Kopfzeile ueber dem Anmelden-Knopf: zeigt auf einen Blick, wie viele Waermepumpen gefunden wurden und wann zuletzt gesucht wurde'],
+                    ['type' => 'Label', 'caption' => '• Warnt jetzt, falls parallel eine aktive HeishaMon-Instanz existiert -- WPHub (Cloud) und HeishaMon (lokal) können dieselbe Panasonic-Wärmepumpe ansteuern, ohne voneinander zu wissen'],
                     ['type' => 'Button', 'caption' => 'Verstanden – nicht mehr anzeigen', 'onClick' => 'WPHUB_AckNews($id);'],
                 ],
             ]);
@@ -156,6 +163,18 @@ class WPHub extends IPSModule
                 'visible' => true,
             ]);
             $this->updateFormElement($form['elements'], 'MeterHubAdoptButton', ['visible' => true]);
+        }
+
+        // Koexistenz-Warnung HeishaMon (13.09.2026, Verbund-Konfliktpruefung
+        // ueber ChargerHub/HeishaMon): rein informativ, ganz oben im Formular
+        // (letzter array_unshift gewinnt die Spitzenposition, daher nach dem
+        // NewsPanel-Unshift), siehe heishaMonCoexistenceWarning().
+        $heishaWarning = $this->heishaMonCoexistenceWarning();
+        if ($heishaWarning !== null) {
+            array_unshift($form['elements'], [
+                'type'    => 'Label',
+                'caption' => $heishaWarning,
+            ]);
         }
 
         return json_encode($form);
@@ -628,6 +647,43 @@ class WPHub extends IPSModule
             }
         } catch (\Throwable $e) {
             $this->SendDebug('MeterHub-Erkennung', $e->getMessage(), 0);
+        }
+        return null;
+    }
+
+    /**
+     * Rein informativer Koexistenz-Hinweis (13.09.2026, Verbund-Konflikt-
+     * pruefung ueber ChargerHub angestossen, mit HeishaMon abgestimmt):
+     * HeishaMon bridged Panasonic-Aquarea-Waermepumpen lokal per MQTT --
+     * hat WPHub UND HeishaMon dieselbe physische Anlage im Zugriff, koennten
+     * beide unabhaengig widersprechende Steuerbefehle senden (Cloud vs.
+     * lokaler Bus). Bewusst KEIN Blockieren: die Geraeteidentitaet laesst
+     * sich zwischen beiden Vertraegen nicht beweisen (kein gemeinsames
+     * Seriennummer-Feld), und Doppelbetrieb ist nicht zwangslaeufig ein
+     * Fehler (z.B. HeishaMon nur Monitoring, WPHub nur unterwegs als
+     * Cloud-Fallback). HeishaMon hat keine eigene "aktiv"-Eigenschaft;
+     * InstanceStatus 102 ("Aktiv") ist der von HeishaMon selbst genannte
+     * naechstliegende Signal-Ersatz. Symmetrisches Gegenstueck (HeishaMon
+     * warnt ebenso vor einer aktiven WPHub-Instanz) baut HeishaMon selbst.
+     */
+    private function heishaMonCoexistenceWarning(): ?string
+    {
+        if (!function_exists('IPS_GetInstanceListByModuleID') || !function_exists('IPS_GetInstance')) {
+            return null;
+        }
+        try {
+            $instances = @IPS_GetInstanceListByModuleID(self::HEISHAMON_MODULE_GUID);
+            if (!is_array($instances)) {
+                return null;
+            }
+            foreach ($instances as $instanceID) {
+                $inst = @IPS_GetInstance((int)$instanceID);
+                if (is_array($inst) && (int)($inst['InstanceStatus'] ?? 0) === 102) {
+                    return '⚠️ Es existiert auch eine aktive HeishaMon-Instanz (#' . (int)$instanceID . '). Falls beide dieselbe Panasonic-Wärmepumpe ansteuern: nicht gleichzeitig schreibend nutzen (Flüsterbetrieb/Leistungsbetrieb/Warmwasser-/Zonen-Sollwert) -- sonst können sich Cloud- (WPHub) und lokale Befehle (HeishaMon) widersprechen.';
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->SendDebug('HeishaMon-Koexistenz', $e->getMessage(), 0);
         }
         return null;
     }

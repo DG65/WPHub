@@ -86,6 +86,7 @@ function IPS_VariableExists(int $id): bool
 // Fehler dadurch nie aufgedeckt).
 const TEST_ARCHIVE_INSTANCE_ID = 55555;
 const TEST_METERHUB_MODULE_GUID = '{BAB8E05C-9150-43B9-9F2B-E5215FA54F0A}';
+const TEST_HEISHAMON_MODULE_GUID = '{1919151A-3C0F-4C09-B906-291638EC1469}';
 function IPS_GetInstanceListByModuleID(string $moduleID): array
 {
     if ($moduleID === '{43192F0B-135B-4CE7-A0A7-1475603F3060}') {
@@ -93,6 +94,9 @@ function IPS_GetInstanceListByModuleID(string $moduleID): array
     }
     if ($moduleID === TEST_METERHUB_MODULE_GUID) {
         return $GLOBALS['ips']['meterHubInstances'] ?? [];
+    }
+    if ($moduleID === TEST_HEISHAMON_MODULE_GUID) {
+        return $GLOBALS['ips']['heishaMonInstances'] ?? [];
     }
     return [];
 }
@@ -102,6 +106,13 @@ function IPS_GetInstanceListByModuleID(string $moduleID): array
 function MHUB_GetFunctions(int $id): string
 {
     return $GLOBALS['ips']['meterHubFunctions'][$id] ?? json_encode(['assignments' => []]);
+}
+// Fuer den HeishaMon-Koexistenz-Hinweis: Tests befuellen
+// $GLOBALS['ips']['heishaMonInstanceStatus'][$instanceID] mit dem
+// InstanceStatus, den eine echte HeishaMon-Instanz haette (102 = aktiv).
+function IPS_GetInstance(int $id): array
+{
+    return ['InstanceStatus' => $GLOBALS['ips']['heishaMonInstanceStatus'][$id] ?? 104];
 }
 function AC_GetLoggingStatus(int $archiveID, int $variableID): bool
 {
@@ -1005,6 +1016,37 @@ check('Ohne Fund: Fehlermeldung im Formular', strpos($GLOBALS['ips']['formFieldU
 // Aufraeumen fuer nachfolgende Bloecke.
 $GLOBALS['ips']['meterHubInstances'] = [];
 $GLOBALS['ips']['meterHubFunctions'] = [];
+
+// ---------------------------------------------------------------------------
+echo "Block 4f: HeishaMon-Koexistenz-Hinweis (13.09.2026)\n";
+// ---------------------------------------------------------------------------
+
+$heishaWarning = new ReflectionMethod(WPHub::class, 'heishaMonCoexistenceWarning');
+$heishaWarning->setAccessible(true);
+
+// Keine HeishaMon-Instanz im System -> kein Hinweis.
+$GLOBALS['ips']['heishaMonInstances'] = [];
+$GLOBALS['ips']['heishaMonInstanceStatus'] = [];
+check('Ohne HeishaMon-Instanz: kein Hinweis', $heishaWarning->invoke($mod) === null);
+
+// HeishaMon-Instanz vorhanden, aber inaktiv (InstanceStatus 104) -> kein Hinweis.
+$GLOBALS['ips']['heishaMonInstances'] = [99401];
+$GLOBALS['ips']['heishaMonInstanceStatus'] = [99401 => 104];
+check('Inaktive HeishaMon-Instanz: kein Hinweis', $heishaWarning->invoke($mod) === null);
+
+// HeishaMon-Instanz aktiv (InstanceStatus 102) -> Hinweis mit Instanz-ID.
+$GLOBALS['ips']['heishaMonInstanceStatus'] = [99401 => 102];
+$warning = $heishaWarning->invoke($mod);
+check('Aktive HeishaMon-Instanz: Hinweis erscheint', $warning !== null && strpos($warning, '⚠️') === 0, $warning ?? 'null');
+check('Hinweis nennt die Instanz-ID', strpos($warning ?? '', '#99401') !== false, $warning ?? 'null');
+
+// GetConfigurationForm() zeigt den Hinweis ganz oben (vor allen anderen Elementen).
+$formWithWarning = json_decode($mod->GetConfigurationForm(), true);
+check('Hinweis steht an erster Stelle im Formular', ($formWithWarning['elements'][0]['caption'] ?? '') === $warning);
+
+// Aufraeumen fuer nachfolgende Bloecke.
+$GLOBALS['ips']['heishaMonInstances'] = [];
+$GLOBALS['ips']['heishaMonInstanceStatus'] = [];
 
 // ---------------------------------------------------------------------------
 echo "Block 5: Vollstaendigkeit der Methodenaufrufe\n";

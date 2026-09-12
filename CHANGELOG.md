@@ -1,5 +1,9 @@
 # Changelog — NRG-Stack WPHub
 
+## 0.5.0 (Build 53) — 13.09.2026
+
+- **Koexistenz-Hinweis für HeishaMon.** ChargerHub deckte im Rahmen einer verbundweiten Konfliktprüfung (Anlass: ihr eigener go-e-Hardlock mit OCPPHub) auf, dass WPHub (Panasonic Comfort Cloud) und HeishaMon (lokale MQTT-Bridge) bei Dietmar dieselbe physische Aquarea-Wärmepumpe ansteuern könnten — live bestätigt: `WPHUB_Active` stand tatsächlich auf `true`, während HeishaMon parallel lokal lief. Beide Kanäle können unabhängig voneinander widersprechende Befehle senden (Flüsterbetrieb, Leistungsbetrieb, Warmwasser-/Zonen-Sollwert vs. HeishaMons `main/Quiet_Mode_Schedule`/`main/DHW_Target_Temp`/`main/Z1_Water_Temp`), ohne dass eines der Module vom anderen weiß. Neue private Methode `heishaMonCoexistenceWarning()` zeigt jetzt, sobald eine aktive HeishaMon-Instanz existiert (`InstanceStatus === 102`, der von HeishaMon selbst genannte nächstliegende Signal-Ersatz — HeishaMon führt keine eigene "aktiv"-Eigenschaft), einen Warnhinweis ganz oben im Konfigurationsformular. **Bewusst rein informativ, kein Blockieren:** die Geräteidentität lässt sich zwischen beiden Verträgen nicht beweisen (kein gemeinsames Seriennummer-Feld), und Doppelbetrieb ist nicht zwangsläufig ein Fehler (z. B. HeishaMon nur Monitoring, WPHub nur unterwegs als Cloud-Fallback). Symmetrisches Gegenstück baut HeishaMon auf eigener Seite. 5 neue Tests (Block 4f). Dietmar direkt gefragt, welcher Kanal bei ihm führend sein soll.
+
 ## 0.4.4 (Build 52) — 12.09.2026
 
 - **Modulname gekürzt: „NRG-Stack WPHub for IP-Symcon" → „NRG-Stack WPHub".** Dietmars Entscheidung, den „for IP-Symcon"-Zusatz zu entfernen (`library.json→name`). Rein kosmetisch, keine Auswirkung auf `module.json`/Klassennamen (`WPHub`, bleibt technisch unverändert), GUID oder Vertrag.
