@@ -1,5 +1,9 @@
 # Changelog — NRG-Stack WPHub
 
+## 0.4.4 (Build 52) — 12.09.2026
+
+- **Modulname gekürzt: „NRG-Stack WPHub for IP-Symcon" → „NRG-Stack WPHub".** Dietmars Entscheidung, den „for IP-Symcon"-Zusatz zu entfernen (`library.json→name`). Rein kosmetisch, keine Auswirkung auf `module.json`/Klassennamen (`WPHub`, bleibt technisch unverändert), GUID oder Vertrag.
+
 ## 0.4.3 (Build 51) — 20.08.2026
 
 - **Neuer Knopf „🔄 Übernehmen erzwingen (ohne Formularänderung)"** im Doku-Panel (Angebot von EMS, keine Pflicht-Konvention). Ruft direkt `IPS_ApplyChanges($id)` mit Bestätigungs-Popup auf — praktisch nach einem Modul-Update über die Modulverwaltung, ohne extra ein Feld anfassen und speichern zu müssen, damit z. B. neu registrierte Attribute/Properties sofort greifen. Reiner `form.json`-Zusatz (natives `onClick`, kein neuer Modulcode).

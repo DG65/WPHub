@@ -33,7 +33,8 @@ ist bereits herstellerneutral.
 
 1. **Marke/Repo:** Verbund heißt nach außen "NRG-Stack", DG65 = Hersteller/Org
    (technisch: Dietmars persönlicher GitHub-Account, keine echte Org).
-   `library.json→name` = "NRG-Stack WPHub for IP-Symcon". `module.json→name`
+   `library.json→name` = "NRG-Stack WPHub" (12.09.2026: "for IP-Symcon"-Zusatz
+   entfernt, Dietmars Entscheidung). `module.json→name`
    (PHP-Klassenname) bleibt technisch "WPHub", NIE mit Bindestrich, taucht
    nicht im Markennamen auf.
 2. **Lizenz:** PolyForm Noncommercial 1.0.0, LICENSE-Datei bereits 1:1 aus dem
