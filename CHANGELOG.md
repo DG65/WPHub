@@ -1,5 +1,9 @@
 # Changelog — NRG-Stack WPHub
 
+## 0.6.2 (Build 56) — 13.09.2026
+
+- **Hilfe-Fragen nachgeschärft, EMS-Feedback zur bestehenden SUITE.md-Konvention „Feld-Hilfestellung".** Die in Build 55 eingeführten Fragen waren zwei Punkte von der (bereits seit 01.09.2026 in SUITE.md stehenden, uns nur nicht bekannten) Regel entfernt: (1) Fragen brauchen einen konkreten Gegenstand statt generischer Formulierungen — „Wofür ist das gut?" → „Wofür sind externe Sensoren & Zähler gut?", „Wann brauche ich das?" → „Wann brauche ich „Aktualisierte Bedingungen akzeptieren"?", „Ist das sicher?" → „Ist die Speicherung der Zugangsdaten sicher?" ( „Wozu die App-Version?" war schon konkret genug, nur leicht geschärft). (2) `width` fest auf 460px statt weggelassen (EMS-Empfehlung: 460–480px für einzeilige Fragen, unter ~70px unbrauchbar).
+
 ## 0.6.1 (Build 55) — 13.09.2026
 
 - **Hilfe-Schaltflächen zeigen jetzt die Frage direkt, statt nur "?".** Dietmars Vorgabe: der Nutzer soll schon am Formular sehen, welche Frage sich per Klick beantworten lässt ("Wofür ist das gut?", "Wann brauche ich das?", "Wozu die App-Version?", "Ist das sicher?" — Letztere neu so formuliert, hieß bisher nur "Hinweis zur Sicherheit"), statt erst auf ein anonymes "?" klicken zu müssen. Festes `width:"70px"` entfernt (war auf ein einzelnes Zeichen zugeschnitten). Rein `form.json`, kein Codewechsel.

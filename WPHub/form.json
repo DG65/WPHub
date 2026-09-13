@@ -59,9 +59,10 @@
                         },
                         {
                             "type": "PopupButton",
-                            "caption": "Ist das sicher?",
+                            "caption": "Ist die Speicherung der Zugangsdaten sicher?",
+                            "width": "460px",
                             "popup": {
-                                "caption": "Ist das sicher?",
+                                "caption": "Ist die Speicherung der Zugangsdaten sicher?",
                                 "items": [
                                     {
                                         "type": "Label",
@@ -104,9 +105,10 @@
                         },
                         {
                             "type": "PopupButton",
-                            "caption": "Wann brauche ich das?",
+                            "caption": "Wann brauche ich „Aktualisierte Bedingungen akzeptieren“?",
+                            "width": "460px",
                             "popup": {
-                                "caption": "Wann brauche ich das?",
+                                "caption": "Wann brauche ich „Aktualisierte Bedingungen akzeptieren“?",
                                 "items": [
                                     {
                                         "type": "Label",
@@ -133,9 +135,10 @@
                         },
                         {
                             "type": "PopupButton",
-                            "caption": "Wozu die App-Version?",
+                            "caption": "Wozu das Feld App-Version?",
+                            "width": "460px",
                             "popup": {
-                                "caption": "Wozu die App-Version?",
+                                "caption": "Wozu das Feld App-Version?",
                                 "items": [
                                     {
                                         "type": "Label",
@@ -163,9 +166,10 @@
                         },
                         {
                             "type": "PopupButton",
-                            "caption": "Wofür ist das gut?",
+                            "caption": "Wofür sind externe Sensoren & Zähler gut?",
+                            "width": "460px",
                             "popup": {
-                                "caption": "Wofür ist das gut?",
+                                "caption": "Wofür sind externe Sensoren & Zähler gut?",
                                 "items": [
                                     {
                                         "type": "Label",

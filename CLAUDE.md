@@ -47,15 +47,16 @@ ist bereits herstellerneutral.
 5. **Formular-Konvention:** "🆕 Neu in Version X.Y" (aufgeklappt, pro-Version
    dismissible, KEINE Versionsnummer drin) → "📖 Dokumentation & Hilfe"
    (eingeklappt, Versionsnummer rein) → Fachpanels → Forum-Hinweis
-   (dismissible). Erklärungsbedürftige Felder: `PopupButton` mit der
-   eigentlichen Frage als Beschriftung (z. B. "Wofür ist das gut?"), NICHT
-   nur "?" (Dietmars Entscheidung 13.09.2026: der Nutzer soll schon am
-   Formular sehen, WELCHE Frage sich beantworten laesst, statt erst klicken
-   zu muessen). Kein festes `width` mehr (war auf ein einzelnes "?"-Zeichen
-   zugeschnitten, passt nicht mehr zu vollen Fragesaetzen) -- Beschriftung
-   und Popup-`caption` sind identisch. Kein natives Tooltip in Symcon-
-   Formularen, daher weiterhin PopupButton statt Tooltip. Referenz:
-   InverterHub (dort ggf. noch alte "?"-Fassung, siehe unten).
+   (dismissible). **Feld-Hilfestellung** (SUITE.md-Konvention seit
+   01.09.2026, „Feld-Hilfestellung", ~Zeile 489–514 -- NICHT von uns
+   erfunden, wir hatten sie nur unvollstaendig umgesetzt): `PopupButton`
+   mit der VOLLEN, KONKRETEN Frage als Beschriftung, NIE nur "?" und NIE
+   generisch ("Wofür ist das gut?" ohne Bezug ist zu unspezifisch, sobald
+   mehrere Hilfe-Knoepfe untereinander stehen -- der Gegenstand gehoert in
+   die Frage, z. B. "Wofür sind externe Sensoren & Zähler gut?"). `width`
+   fest auf 460–480px (EMS-Empfehlung, bewaehrt fuer einzeilige Fragen;
+   NICHT weglassen). Beschriftung und Popup-`caption` sind identisch. Kein
+   natives Tooltip in Symcon-Formularen, daher PopupButton statt Tooltip.
 6. **Versionierung:** SemVer je Modul. Datenverträge liefern additiv
    `'contractVersion' => 'Major.Minor'`, Major nur bei Bruch.
 7. **Contract-Form (WICHTIG, bereits im Scaffold umgesetzt):**
