@@ -443,6 +443,13 @@ $mod->ApplyChanges();
 check('Aktiv ohne Anmeldung → Status 201', $mod->status === 201, 'Status ' . $mod->status);
 check('Timer bleibt aus ohne Anmeldung', $mod->GetTimerInterval('WPHUB_UpdateTimer') === 0);
 
+// Doku-Panel liest die Versionsnummer dynamisch aus library.json (Fund
+// 13.09.2026: eine frueher fest im form.json eingetragene "0.1.0" war seit
+// Build 3 nie mehr aktualisiert worden -- jetzt kann sie nicht mehr veralten).
+$realLibraryVersion = json_decode(file_get_contents(__DIR__ . '/../library.json'), true)['version'] ?? null;
+$versionInfo = findFormElement(json_decode($mod->GetConfigurationForm(), true)['elements'], 'VersionInfo');
+check('Doku-Panel zeigt die echte library.json-Version', $realLibraryVersion !== null && strpos($versionInfo['caption'] ?? '', 'WPHub Version ' . $realLibraryVersion) !== false, $versionInfo['caption'] ?? 'null');
+
 $mod->Update();
 check('Update ohne Anmeldung → Status 201, kein Absturz', $mod->status === 201);
 

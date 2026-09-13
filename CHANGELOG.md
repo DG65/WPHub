@@ -1,5 +1,10 @@
 # Changelog — NRG-Stack WPHub
 
+## 0.6.3 (Build 57) — 13.09.2026
+
+- **Echte Umlaute statt ae/oe/ue in nutzersichtbaren Texten** (EMS-Hinweis auf Verbund-Regel 9b, SUITE.md-Store-Checkliste). Betraf sechs alte, noch nie überarbeitete Textstellen im Doku-Panel und in den Hilfe-Popups (Sicherheitshinweis, Zustimmungs-Erklärung, App-Version-Erklärung) sowie den Vertrags-Fallback `Caption` in `WPHUB_GetFunctions()` und einen `SendDebug`-Themennamen. Datumsformat war bereits unauffällig (`discoverySummaryLine()` zeigt nur die Uhrzeit, keine Datums-ISO-Notation).
+- **Nebenfund dabei behoben: Versionsnummer im Doku-Panel war seit Build 3 fest auf "0.1.0" eingefroren.** Liest jetzt bei jedem Formularaufruf live aus `library.json`, kann also nicht mehr veralten. 1 neuer Test.
+
 ## 0.6.2 (Build 56) — 13.09.2026
 
 - **Hilfe-Fragen nachgeschärft, EMS-Feedback zur bestehenden SUITE.md-Konvention „Feld-Hilfestellung".** Die in Build 55 eingeführten Fragen waren zwei Punkte von der (bereits seit 01.09.2026 in SUITE.md stehenden, uns nur nicht bekannten) Regel entfernt: (1) Fragen brauchen einen konkreten Gegenstand statt generischer Formulierungen — „Wofür ist das gut?" → „Wofür sind externe Sensoren & Zähler gut?", „Wann brauche ich das?" → „Wann brauche ich „Aktualisierte Bedingungen akzeptieren"?", „Ist das sicher?" → „Ist die Speicherung der Zugangsdaten sicher?" ( „Wozu die App-Version?" war schon konkret genug, nur leicht geschärft). (2) `width` fest auf 460px statt weggelassen (EMS-Empfehlung: 460–480px für einzeilige Fragen, unter ~70px unbrauchbar).

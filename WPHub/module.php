@@ -129,6 +129,16 @@ class WPHub extends IPSModule
     {
         $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
 
+        // Versionsnummer im Doku-Panel dynamisch aus library.json lesen statt
+        // fest im form.json einzutragen -- eine frueher fest eingetragene
+        // "0.1.0" war seit Build 3 nie mehr aktualisiert worden (Fund
+        // 13.09.2026, im Rahmen der Umlaut-/Datumsformat-Durchsicht).
+        $libraryInfo = @json_decode((string)@file_get_contents(__DIR__ . '/../library.json'), true);
+        $libraryVersion = (is_array($libraryInfo) && isset($libraryInfo['version'])) ? (string)$libraryInfo['version'] : '?';
+        $this->updateFormElement($form['elements'], 'VersionInfo', [
+            'caption' => 'ℹ️ WPHub Version ' . $libraryVersion . ' -- Wärmepumpen-Cloud-Anbindung, Start mit Panasonic Comfort Cloud.',
+        ]);
+
         // "Neu in Version"-Panel vorn einhaengen, solange diese Version noch
         // nicht bestaetigt wurde (Dismiss NUR via Attribut + UpdateFormField,
         // kein IPS_SetProperty/ApplyChanges -- Store-Review-Regel).
@@ -447,7 +457,7 @@ class WPHub extends IPSModule
             $out[] = [
                 'contractVersion'      => '1.11',
                 'Type'                 => 'heatpump',
-                'Caption'              => $d['name'] ?? 'Waermepumpe',
+                'Caption'              => $d['name'] ?? 'Wärmepumpe',
                 'PowerID'              => $extPowerID,
                 'EnergyID'             => $extEnergyID,
                 'Measured'             => ($extPowerID > 0),
@@ -959,7 +969,7 @@ class WPHub extends IPSModule
                 $isA2W = ((string)($entry['deviceType'] ?? '') === '2')
                     || isset($entry['zoneStatus']) || isset($entry['tankStatus']);
                 if (!$isA2W) {
-                    $this->SendDebug('Geraete', 'Übersprungen (kein A2W): ' . ($entry['deviceName'] ?? $guid), 0);
+                    $this->SendDebug('Geräte', 'Übersprungen (kein A2W): ' . ($entry['deviceName'] ?? $guid), 0);
                     continue;
                 }
 

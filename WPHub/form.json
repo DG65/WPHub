@@ -7,11 +7,12 @@
             "items": [
                 {
                     "type": "Label",
-                    "caption": "ℹ️ WPHub Version 0.1.0 -- Waermepumpen-Cloud-Anbindung, Start mit Panasonic Comfort Cloud."
+                    "name": "VersionInfo",
+                    "caption": "ℹ️ WPHub Version -- Wärmepumpen-Cloud-Anbindung, Start mit Panasonic Comfort Cloud."
                 },
                 {
                     "type": "Label",
-                    "caption": "Verbindet sich mit der Panasonic Comfort Cloud (gleiches Konto wie die offizielle App) und stellt gefundene Aquarea-Waermepumpen dem NRG-Stack-Verbund (z. B. EMS) zur Verfuegung. Klimageraete werden bewusst nicht eingebunden. Details: https://github.com/DG65/NRGWPHub"
+                    "caption": "Verbindet sich mit der Panasonic Comfort Cloud (gleiches Konto wie die offizielle App) und stellt gefundene Aquarea-Wärmepumpen dem NRG-Stack-Verbund (z. B. EMS) zur Verfügung. Klimageräte werden bewusst nicht eingebunden. Details: https://github.com/DG65/NRGWPHub"
                 },
                 {
                     "type": "Label",
@@ -55,7 +56,7 @@
                     "items": [
                         {
                             "type": "Label",
-                            "caption": "Zugangsdaten werden nur fuer die einmalige Anmeldung verwendet, danach nicht mehr gespeichert -- nur der resultierende Zugangsschluessel."
+                            "caption": "Zugangsdaten werden nur für die einmalige Anmeldung verwendet, danach nicht mehr gespeichert -- nur der resultierende Zugangsschlüssel."
                         },
                         {
                             "type": "PopupButton",
@@ -66,7 +67,7 @@
                                 "items": [
                                     {
                                         "type": "Label",
-                                        "caption": "IP-Symcon verschluesselt Attribute NICHT at rest. \"Sicher\" heisst hier: nicht im Formular/Protokoll sichtbar -- keine echte Verschluesselung. Das Passwort wird nur fuer die einmalige Anmeldung verwendet und danach automatisch geleert; gespeichert bleibt nur der Zugangsschluessel (Token). Konten mit Zwei-Faktor-Authentifizierung (2FA) werden noch nicht unterstuetzt."
+                                        "caption": "IP-Symcon verschlüsselt Attribute NICHT at rest. \"Sicher\" heißt hier: nicht im Formular/Protokoll sichtbar -- keine echte Verschlüsselung. Das Passwort wird nur für die einmalige Anmeldung verwendet und danach automatisch geleert; gespeichert bleibt nur der Zugangsschlüssel (Token). Konten mit Zwei-Faktor-Authentifizierung (2FA) werden noch nicht unterstützt."
                                     }
                                 ]
                             }
@@ -112,7 +113,7 @@
                                 "items": [
                                     {
                                         "type": "Label",
-                                        "caption": "Panasonic verlangt nach Aktualisierungen von Nutzungsbedingungen oder Datenschutzerklaerung eine erneute Zustimmung des Kontos (Cloud-Fehlercode 4103, Instanzstatus \"Zustimmung erforderlich\") -- so wie beim naechsten Start der offiziellen App. Diese Schaltflaeche bestaetigt beides im Namen Deines Kontos; WPHub tut das bewusst NIE automatisch. Die Texte selbst gibt es in der offiziellen App bzw. auf panasonic.com. Alternativ: einmal die offizielle Comfort-Cloud-App oeffnen und dort bestaetigen."
+                                        "caption": "Panasonic verlangt nach Aktualisierungen von Nutzungsbedingungen oder Datenschutzerklärung eine erneute Zustimmung des Kontos (Cloud-Fehlercode 4103, Instanzstatus \"Zustimmung erforderlich\") -- so wie beim nächsten Start der offiziellen App. Diese Schaltfläche bestätigt beides im Namen Deines Kontos; WPHub tut das bewusst NIE automatisch. Die Texte selbst gibt es in der offiziellen App bzw. auf panasonic.com. Alternativ: einmal die offizielle Comfort-Cloud-App öffnen und dort bestätigen."
                                     }
                                 ]
                             }
@@ -142,7 +143,7 @@
                                 "items": [
                                     {
                                         "type": "Label",
-                                        "caption": "Die Comfort Cloud weist Anfragen zu alter App-Versionen ab (Fehlercode 4106). WPHub ermittelt die aktuelle Versionsnummer der offiziellen App dann selbst (Play Store, ersatzweise AppBrain) und verwendet sie automatisch weiter. Dieses Feld ist nur der Notnagel, falls die automatische Ermittlung fehlschlaegt: dann hier die Versionsnummer aus dem Play Store/App Store eintragen und uebernehmen. Eine automatisch ermittelte Version hat Vorrang vor diesem Feld."
+                                        "caption": "Die Comfort Cloud weist Anfragen zu alter App-Versionen ab (Fehlercode 4106). WPHub ermittelt die aktuelle Versionsnummer der offiziellen App dann selbst (Play Store, ersatzweise AppBrain) und verwendet sie automatisch weiter. Dieses Feld ist nur der Notnagel, falls die automatische Ermittlung fehlschlägt: dann hier die Versionsnummer aus dem Play Store/App Store eintragen und übernehmen. Eine automatisch ermittelte Version hat Vorrang vor diesem Feld."
                                     }
                                 ]
                             }
