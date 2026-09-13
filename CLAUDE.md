@@ -47,9 +47,15 @@ ist bereits herstellerneutral.
 5. **Formular-Konvention:** "🆕 Neu in Version X.Y" (aufgeklappt, pro-Version
    dismissible, KEINE Versionsnummer drin) → "📖 Dokumentation & Hilfe"
    (eingeklappt, Versionsnummer rein) → Fachpanels → Forum-Hinweis
-   (dismissible). Erklärungsbedürftige Felder: `PopupButton` mit `"?"`-
-   Beschriftung, `width:"70px"` (kein natives Tooltip in Symcon-Formularen).
-   Referenz: InverterHub.
+   (dismissible). Erklärungsbedürftige Felder: `PopupButton` mit der
+   eigentlichen Frage als Beschriftung (z. B. "Wofür ist das gut?"), NICHT
+   nur "?" (Dietmars Entscheidung 13.09.2026: der Nutzer soll schon am
+   Formular sehen, WELCHE Frage sich beantworten laesst, statt erst klicken
+   zu muessen). Kein festes `width` mehr (war auf ein einzelnes "?"-Zeichen
+   zugeschnitten, passt nicht mehr zu vollen Fragesaetzen) -- Beschriftung
+   und Popup-`caption` sind identisch. Kein natives Tooltip in Symcon-
+   Formularen, daher weiterhin PopupButton statt Tooltip. Referenz:
+   InverterHub (dort ggf. noch alte "?"-Fassung, siehe unten).
 6. **Versionierung:** SemVer je Modul. Datenverträge liefern additiv
    `'contractVersion' => 'Major.Minor'`, Major nur bei Bruch.
 7. **Contract-Form (WICHTIG, bereits im Scaffold umgesetzt):**

@@ -59,10 +59,9 @@
                         },
                         {
                             "type": "PopupButton",
-                            "caption": "?",
-                            "width": "70px",
+                            "caption": "Ist das sicher?",
                             "popup": {
-                                "caption": "Hinweis zur Sicherheit",
+                                "caption": "Ist das sicher?",
                                 "items": [
                                     {
                                         "type": "Label",
@@ -105,8 +104,7 @@
                         },
                         {
                             "type": "PopupButton",
-                            "caption": "?",
-                            "width": "70px",
+                            "caption": "Wann brauche ich das?",
                             "popup": {
                                 "caption": "Wann brauche ich das?",
                                 "items": [
@@ -135,8 +133,7 @@
                         },
                         {
                             "type": "PopupButton",
-                            "caption": "?",
-                            "width": "70px",
+                            "caption": "Wozu die App-Version?",
                             "popup": {
                                 "caption": "Wozu die App-Version?",
                                 "items": [
@@ -166,8 +163,7 @@
                         },
                         {
                             "type": "PopupButton",
-                            "caption": "?",
-                            "width": "70px",
+                            "caption": "Wofür ist das gut?",
                             "popup": {
                                 "caption": "Wofür ist das gut?",
                                 "items": [

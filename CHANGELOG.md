@@ -1,5 +1,9 @@
 # Changelog — NRG-Stack WPHub
 
+## 0.6.1 (Build 55) — 13.09.2026
+
+- **Hilfe-Schaltflächen zeigen jetzt die Frage direkt, statt nur "?".** Dietmars Vorgabe: der Nutzer soll schon am Formular sehen, welche Frage sich per Klick beantworten lässt ("Wofür ist das gut?", "Wann brauche ich das?", "Wozu die App-Version?", "Ist das sicher?" — Letztere neu so formuliert, hieß bisher nur "Hinweis zur Sicherheit"), statt erst auf ein anonymes "?" klicken zu müssen. Festes `width:"70px"` entfernt (war auf ein einzelnes Zeichen zugeschnitten). Rein `form.json`, kein Codewechsel.
+
 ## 0.6.0 (Build 54) — 13.09.2026
 
 - **Vorrang-Entscheidung Dietmars umgesetzt: existiert eine aktive HeishaMon-Instanz, steuert WPHub gar nicht mehr.** Direkte Folge des Koexistenz-Hinweises aus Build 53 ("Im Grunde ist es doch ganz einfach, wenn es eine HeishaMon gibt, dann darf WPHub nichts steuern!"). Zwei Teile: (1) `applyControl()` (der einzige Codepfad für alle Steuerfelder) lehnt jeden Steuerbefehl ab, sobald `heishaMonCoexistenceWarning()` eine aktive HeishaMon-Instanz meldet — Protokollzeile erklärt warum, Variable bleibt wie bei jedem anderen Fehlschlag auf dem letzten bestätigten Stand. (2) `maintainDeviceVariables()` deaktiviert dafür zusätzlich sichtbar alle Steuerelemente (`DisableAction` statt `EnableAction`: Flüsterbetrieb, Leistungsbetrieb, Warmwasser-/Zonen-Sollwert, Urlaubstimer, Notbetriebe) statt sie anklickbar zu lassen und den Klick dann nur im Hintergrund abzulehnen — und aktiviert sie automatisch wieder, sobald keine aktive HeishaMon-Instanz mehr existiert. **Nur das Schreiben ist betroffen:** Messwerte/Status werden unverändert weiter angezeigt und aktualisiert. Bewusst ohne Geräte-Identitätsprüfung (Dietmar hat ohnehin nur eine Panasonic-Anlage). 3 neue Tests.
