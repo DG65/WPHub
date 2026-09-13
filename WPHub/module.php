@@ -31,7 +31,7 @@ class WPHub extends IPSModule
 {
     // Stand des "Neu in Version"-Panels; bei jeder Version mit Neuigkeiten
     // hochziehen, dann erscheint das Panel wieder (pro Version dismissible).
-    const NEWS_VERSION = '0.5.0';
+    const NEWS_VERSION = '0.6.0';
 
     // Comfort Cloud meldet 126 als "kein gueltiger Messwert".
     const CC_INVALID_TEMPERATURE = 126;
@@ -139,7 +139,7 @@ class WPHub extends IPSModule
                 'caption'  => '🆕 Neu in Version ' . self::NEWS_VERSION,
                 'expanded' => true,
                 'items'    => [
-                    ['type' => 'Label', 'caption' => '• Warnt jetzt, falls parallel eine aktive HeishaMon-Instanz existiert -- WPHub (Cloud) und HeishaMon (lokal) können dieselbe Panasonic-Wärmepumpe ansteuern, ohne voneinander zu wissen'],
+                    ['type' => 'Label', 'caption' => '• Existiert eine aktive HeishaMon-Instanz, steuert WPHub jetzt gar nicht mehr (Flüsterbetrieb/Leistungsbetrieb/Warmwasser-/Zonen-Sollwert/Urlaubstimer/Notbetriebe deaktiviert) -- Dietmars Entscheidung: HeishaMon hat Vorrang, wenn beide dieselbe Wärmepumpe im Zugriff haben. Messwerte werden weiterhin angezeigt.'],
                     ['type' => 'Button', 'caption' => 'Verstanden – nicht mehr anzeigen', 'onClick' => 'WPHUB_AckNews($id);'],
                 ],
             ]);
@@ -652,19 +652,22 @@ class WPHub extends IPSModule
     }
 
     /**
-     * Rein informativer Koexistenz-Hinweis (13.09.2026, Verbund-Konflikt-
-     * pruefung ueber ChargerHub angestossen, mit HeishaMon abgestimmt):
-     * HeishaMon bridged Panasonic-Aquarea-Waermepumpen lokal per MQTT --
-     * hat WPHub UND HeishaMon dieselbe physische Anlage im Zugriff, koennten
-     * beide unabhaengig widersprechende Steuerbefehle senden (Cloud vs.
-     * lokaler Bus). Bewusst KEIN Blockieren: die Geraeteidentitaet laesst
+     * Koexistenz-Check (13.09.2026, Verbund-Konfliktpruefung ueber
+     * ChargerHub/HeishaMon angestossen, seit Dietmars Vorrang-Entscheidung
+     * 13.09.2026 verbindlich): HeishaMon bridged Panasonic-Aquarea-
+     * Waermepumpen lokal per MQTT -- existiert eine aktive HeishaMon-
+     * Instanz, hat sie Vorrang. WPHub steuert dann gar nicht mehr
+     * (applyControl()/EnableAction() in maintainDeviceVariables()), zeigt
+     * aber weiterhin alle Messwerte (Update()/refreshDevices() bleiben
+     * unangetastet) -- nur das Schreiben wird abgeschaltet, nicht das Lesen.
+     * HeishaMon hat keine eigene "aktiv"-Eigenschaft; InstanceStatus 102
+     * ("Aktiv") ist der von HeishaMon selbst genannte naechstliegende
+     * Signal-Ersatz. Bewusst ohne Geraete-Identitaetspruefung: die laesst
      * sich zwischen beiden Vertraegen nicht beweisen (kein gemeinsames
-     * Seriennummer-Feld), und Doppelbetrieb ist nicht zwangslaeufig ein
-     * Fehler (z.B. HeishaMon nur Monitoring, WPHub nur unterwegs als
-     * Cloud-Fallback). HeishaMon hat keine eigene "aktiv"-Eigenschaft;
-     * InstanceStatus 102 ("Aktiv") ist der von HeishaMon selbst genannte
-     * naechstliegende Signal-Ersatz. Symmetrisches Gegenstueck (HeishaMon
-     * warnt ebenso vor einer aktiven WPHub-Instanz) baut HeishaMon selbst.
+     * Seriennummer-Feld) -- Dietmar hat ohnehin nur eine Panasonic-Anlage,
+     * jede installierte HeishaMon-Instanz ist also praktisch immer dieselbe.
+     * HeishaMons eigene Warnung vor einer aktiven WPHub-Instanz bleibt rein
+     * informativ (HeishaMon ist ja die Vorrang-Seite, muss nichts blockieren).
      */
     private function heishaMonCoexistenceWarning(): ?string
     {
@@ -679,7 +682,7 @@ class WPHub extends IPSModule
             foreach ($instances as $instanceID) {
                 $inst = @IPS_GetInstance((int)$instanceID);
                 if (is_array($inst) && (int)($inst['InstanceStatus'] ?? 0) === 102) {
-                    return '⚠️ Es existiert auch eine aktive HeishaMon-Instanz (#' . (int)$instanceID . '). Falls beide dieselbe Panasonic-Wärmepumpe ansteuern: nicht gleichzeitig schreibend nutzen (Flüsterbetrieb/Leistungsbetrieb/Warmwasser-/Zonen-Sollwert) -- sonst können sich Cloud- (WPHub) und lokale Befehle (HeishaMon) widersprechen.';
+                    return '⚠️ Eine aktive HeishaMon-Instanz (#' . (int)$instanceID . ') steuert diese Wärmepumpe bereits lokal. WPHub steuert deshalb nicht mehr (Flüsterbetrieb/Leistungsbetrieb/Warmwasser-/Zonen-Sollwert/Urlaubstimer/Notbetriebe sind deaktiviert) -- Messwerte werden weiterhin angezeigt.';
                 }
             }
         } catch (\Throwable $e) {
@@ -802,6 +805,15 @@ class WPHub extends IPSModule
      */
     private function applyControl(string $ident, string $field, $value, array $dev, array $bundle, WPHUB_ComfortCloudClient $client): void
     {
+        // Dietmars Vorrang-Entscheidung (13.09.2026): existiert eine aktive
+        // HeishaMon-Instanz, steuert WPHub gar nicht mehr -- unabhaengig vom
+        // Aufrufweg (WebFront-Klick, EMS, Skript). Variable bleibt auf dem
+        // letzten bestaetigten Stand, wie bei jedem anderen Fehlschlag auch.
+        if ($this->heishaMonCoexistenceWarning() !== null) {
+            $this->LogMessage('Steuerbefehl (' . $field . ') blockiert: eine aktive HeishaMon-Instanz steuert diese Anlage bereits, WPHub steuert nicht parallel.', KL_WARNING);
+            return;
+        }
+
         $guid = (string)$dev['guid'];
 
         if ($field === 'Fluesterbetrieb') {
@@ -998,6 +1010,13 @@ class WPHub extends IPSModule
      */
     private function maintainDeviceVariables(string $prefix, string $name, array $dev, bool $reachable, ?array $status = null, ?array $consumption = null): void
     {
+        // Dietmars Vorrang-Entscheidung (13.09.2026, Verbund-Konfliktpruefung
+        // ueber ChargerHub/HeishaMon): existiert eine aktive HeishaMon-
+        // Instanz, steuert WPHub gar nicht mehr -- die Steuerelemente werden
+        // dann bewusst deaktiviert (DisableAction) statt nur beworben und
+        // im Hintergrund abgelehnt, siehe applyControl().
+        $controlBlocked = ($this->heishaMonCoexistenceWarning() !== null);
+
         $pos = 0;
         $this->MaintainVariable($prefix . 'Erreichbar', $name . ': Erreichbar', VARIABLETYPE_BOOLEAN, '~Alert.Reversed', $pos++, true);
         $this->SetValue($prefix . 'Erreichbar', $reachable);
@@ -1030,19 +1049,19 @@ class WPHub extends IPSModule
         if (is_array($status)) {
             if (isset($status['quietMode'])) {
                 $this->MaintainVariable($prefix . 'Fluesterbetrieb', $name . ': Flüsterbetrieb', VARIABLETYPE_INTEGER, 'WPHUB.Fluesterbetrieb', $pos++, true);
-                $this->EnableAction($prefix . 'Fluesterbetrieb');
+                $controlBlocked ? $this->DisableAction($prefix . 'Fluesterbetrieb') : $this->EnableAction($prefix . 'Fluesterbetrieb');
                 $this->SetValue($prefix . 'Fluesterbetrieb', (int)$status['quietMode']);
             }
             if (isset($status['powerful'])) {
                 $this->MaintainVariable($prefix . 'Leistungsbetrieb', $name . ': Leistungsbetrieb', VARIABLETYPE_INTEGER, 'WPHUB.Leistungsbetrieb', $pos++, true);
-                $this->EnableAction($prefix . 'Leistungsbetrieb');
+                $controlBlocked ? $this->DisableAction($prefix . 'Leistungsbetrieb') : $this->EnableAction($prefix . 'Leistungsbetrieb');
                 $this->SetValue($prefix . 'Leistungsbetrieb', (int)$status['powerful']);
             }
         }
 
         if (is_array($tank) && isset($tank['temperature']) && $this->isValidTemperature($tank['temperature'])) {
             $this->MaintainVariable($prefix . 'WarmwasserSoll', $name . ': Warmwasser Sollwert', VARIABLETYPE_FLOAT, 'NRG.Celsius', $pos++, true);
-            $this->EnableAction($prefix . 'WarmwasserSoll');
+            $controlBlocked ? $this->DisableAction($prefix . 'WarmwasserSoll') : $this->EnableAction($prefix . 'WarmwasserSoll');
             $this->SetValue($prefix . 'WarmwasserSoll', (float)$tank['temperature']);
         }
 
@@ -1056,23 +1075,23 @@ class WPHub extends IPSModule
             $sz = $statusZones[$zid] ?? null;
             $zname = (is_array($sz) && ($sz['zoneName'] ?? '') !== '') ? (string)$sz['zoneName'] : ('Zone ' . $zid);
             $this->MaintainVariable($prefix . 'Zone' . $zid . 'Soll', $name . ': ' . $zname . ' Solltemperatur', VARIABLETYPE_FLOAT, 'NRG.Celsius', $pos++, true);
-            $this->EnableAction($prefix . 'Zone' . $zid . 'Soll');
+            $controlBlocked ? $this->DisableAction($prefix . 'Zone' . $zid . 'Soll') : $this->EnableAction($prefix . 'Zone' . $zid . 'Soll');
             $this->SetValue($prefix . 'Zone' . $zid . 'Soll', (float)$zone['temperature']);
         }
 
         if (is_array($status) && isset($status['holidayTimer'])) {
             $this->MaintainVariable($prefix . 'Urlaubstimer', $name . ': Urlaubstimer aktiv', VARIABLETYPE_BOOLEAN, '~Switch', $pos++, true);
-            $this->EnableAction($prefix . 'Urlaubstimer');
+            $controlBlocked ? $this->DisableAction($prefix . 'Urlaubstimer') : $this->EnableAction($prefix . 'Urlaubstimer');
             $this->SetValue($prefix . 'Urlaubstimer', (int)$status['holidayTimer'] === 1);
         }
         if (is_array($status) && isset($status['forceDHW'])) {
             $this->MaintainVariable($prefix . 'NotbetriebWarmwasser', $name . ': Notbetrieb Warmwasser aktiv', VARIABLETYPE_BOOLEAN, '~Switch', $pos++, true);
-            $this->EnableAction($prefix . 'NotbetriebWarmwasser');
+            $controlBlocked ? $this->DisableAction($prefix . 'NotbetriebWarmwasser') : $this->EnableAction($prefix . 'NotbetriebWarmwasser');
             $this->SetValue($prefix . 'NotbetriebWarmwasser', (int)$status['forceDHW'] === 1);
         }
         if (is_array($status) && isset($status['forceHeater'])) {
             $this->MaintainVariable($prefix . 'NotHeizbetrieb', $name . ': Not-Heizbetrieb aktiv', VARIABLETYPE_BOOLEAN, '~Switch', $pos++, true);
-            $this->EnableAction($prefix . 'NotHeizbetrieb');
+            $controlBlocked ? $this->DisableAction($prefix . 'NotHeizbetrieb') : $this->EnableAction($prefix . 'NotHeizbetrieb');
             $this->SetValue($prefix . 'NotHeizbetrieb', (int)$status['forceHeater'] === 1);
         }
         // ------------------------------------------------------------

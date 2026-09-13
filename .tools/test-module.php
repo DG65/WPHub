@@ -276,6 +276,12 @@ class IPSModule
             $GLOBALS['ips']['variables'][$ident]['actionEnabled'] = true;
         }
     }
+    protected function DisableAction(string $ident): void
+    {
+        if (isset($GLOBALS['ips']['variables'][$ident])) {
+            $GLOBALS['ips']['variables'][$ident]['actionEnabled'] = false;
+        }
+    }
     protected function GetIDForIdent(string $ident)
     {
         if (!isset($GLOBALS['ips']['variables'][$ident])) {
@@ -910,6 +916,20 @@ $applyControl->invoke($mod, $prefix . 'UnbekanntesFeld', 'UnbekanntesFeld', 1, $
 check('Unbekanntes Feld: kein Client-Aufruf', count($ctrl->controlCalls) === 0);
 check('Unbekanntes Feld: Protokollzeile', count($GLOBALS['ips']['log']) === 1);
 
+// Dietmars Vorrang-Entscheidung (13.09.2026): aktive HeishaMon-Instanz ->
+// WPHub steuert gar nicht mehr, unabhaengig vom Feld. Variable bleibt auf
+// dem letzten Stand (2, aus dem allerersten Aufruf oben), kein Cloud-Aufruf.
+$GLOBALS['ips']['heishaMonInstances'] = [99401];
+$GLOBALS['ips']['heishaMonInstanceStatus'] = [99401 => 102];
+$ctrl->controlCalls = [];
+$GLOBALS['ips']['log'] = [];
+$applyControl->invoke($mod, $prefix . 'Fluesterbetrieb', 'Fluesterbetrieb', 0, $devCool, $bundle, $ctrl);
+check('HeishaMon aktiv: kein Cloud-Aufruf', count($ctrl->controlCalls) === 0);
+check('HeishaMon aktiv: Variable bleibt auf altem Wert (2, nicht 0)', ($GLOBALS['ips']['variables'][$prefix . 'Fluesterbetrieb']['value'] ?? null) === 2);
+check('HeishaMon aktiv: Protokollzeile erklärt Blockade', count($GLOBALS['ips']['log']) === 1 && strpos($GLOBALS['ips']['log'][0], 'blockiert') !== false);
+$GLOBALS['ips']['heishaMonInstances'] = [];
+$GLOBALS['ips']['heishaMonInstanceStatus'] = [];
+
 // ---------------------------------------------------------------------------
 echo "Block 4e: MeterHub-Erkennung (Funktionszuordnung \"Waermepumpe\")\n";
 // ---------------------------------------------------------------------------
@@ -1018,7 +1038,7 @@ $GLOBALS['ips']['meterHubInstances'] = [];
 $GLOBALS['ips']['meterHubFunctions'] = [];
 
 // ---------------------------------------------------------------------------
-echo "Block 4f: HeishaMon-Koexistenz-Hinweis (13.09.2026)\n";
+echo "Block 4f: HeishaMon-Koexistenz -- Hinweis + Steuersperre (13.09.2026)\n";
 // ---------------------------------------------------------------------------
 
 $heishaWarning = new ReflectionMethod(WPHub::class, 'heishaMonCoexistenceWarning');
@@ -1044,9 +1064,19 @@ check('Hinweis nennt die Instanz-ID', strpos($warning ?? '', '#99401') !== false
 $formWithWarning = json_decode($mod->GetConfigurationForm(), true);
 check('Hinweis steht an erster Stelle im Formular', ($formWithWarning['elements'][0]['caption'] ?? '') === $warning);
 
-// Aufraeumen fuer nachfolgende Bloecke.
+// Steuersperre: maintainDeviceVariables() deaktiviert die Steuerelemente
+// (DisableAction statt EnableAction), solange HeishaMon aktiv ist, und
+// aktiviert sie wieder, sobald HeishaMon verschwindet.
+$maintainVars = new ReflectionMethod(WPHub::class, 'maintainDeviceVariables');
+$maintainVars->setAccessible(true);
+$statusFixture = ['quietMode' => 1, 'powerful' => 0];
+$maintainVars->invoke($mod, $prefix, 'Heizung', ['tankStatus' => null], true, $statusFixture, null);
+check('HeishaMon aktiv: Flüsterbetrieb-Steuerung deaktiviert', ($GLOBALS['ips']['variables'][$prefix . 'Fluesterbetrieb']['actionEnabled'] ?? true) === false);
+
 $GLOBALS['ips']['heishaMonInstances'] = [];
 $GLOBALS['ips']['heishaMonInstanceStatus'] = [];
+$maintainVars->invoke($mod, $prefix, 'Heizung', ['tankStatus' => null], true, $statusFixture, null);
+check('Ohne HeishaMon: Flüsterbetrieb-Steuerung wieder aktiviert', ($GLOBALS['ips']['variables'][$prefix . 'Fluesterbetrieb']['actionEnabled'] ?? false) === true);
 
 // ---------------------------------------------------------------------------
 echo "Block 5: Vollstaendigkeit der Methodenaufrufe\n";
